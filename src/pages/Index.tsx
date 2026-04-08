@@ -1,20 +1,22 @@
 import { useState } from "react";
-import { RefreshCw, LayoutGrid, Hash, Crown, TrendingUp, AlertTriangle } from "lucide-react";
+import { RefreshCw, LayoutGrid, Hash, Crown, TrendingUp, AlertTriangle, Settings } from "lucide-react";
 import { useFeatureData } from "@/hooks/useFeatureData";
 import StatCard from "@/components/StatCard";
 import FeatureBarChart from "@/components/FeatureBarChart";
 import CategoryGrid from "@/components/CategoryGrid";
 import FeatureTable from "@/components/FeatureTable";
+import CredentialsDialog from "@/components/CredentialsDialog";
 
 const Index = () => {
   const {
-    features, loading, error, lastSynced, refetch,
+    features, loading, error, lastSynced, needsCredentials, refetch,
     totalFeatures, totalRequests, topCategory, mostRequested,
     categories, top10, categoryColorMap,
   } = useFeatureData();
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showCredentials, setShowCredentials] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -51,12 +53,19 @@ const Index = () => {
             <h1 className="text-2xl font-bold text-foreground">Feature Requests</h1>
             <p className="text-sm text-muted-foreground mt-0.5">What your clients are asking for</p>
           </div>
-          <div className="flex items-center gap-3">
-            {!loading && !error && (
+          <div className="flex items-center gap-2">
+            {!loading && !error && !needsCredentials && (
               <span className="text-xs font-medium bg-primary/10 text-primary px-3 py-1 rounded-full">
                 {totalFeatures} features · {totalRequests} total requests
               </span>
             )}
+            <button
+              onClick={() => setShowCredentials(true)}
+              className="p-2 rounded-md border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+              title="Sheet credentials"
+            >
+              <Settings size={16} />
+            </button>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
@@ -74,8 +83,27 @@ const Index = () => {
           </p>
         )}
 
+        {/* Needs credentials prompt */}
+        {needsCredentials && !loading && (
+          <div className="bg-card border border-border rounded-lg p-12 text-center space-y-4">
+            <Settings size={32} className="mx-auto text-muted-foreground" />
+            <div>
+              <p className="text-foreground font-medium">Connect your Google Sheet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Add your Spreadsheet ID and API Key to start fetching feature requests.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCredentials(true)}
+              className="px-5 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Add Credentials
+            </button>
+          </div>
+        )}
+
         {/* Empty state */}
-        {!loading && !error && features.length === 0 && (
+        {!loading && !error && !needsCredentials && features.length === 0 && (
           <div className="bg-card border border-border rounded-lg p-12 text-center">
             <p className="text-muted-foreground">
               No feature requests yet. Data will appear here after your first call is processed.
@@ -84,7 +112,7 @@ const Index = () => {
         )}
 
         {/* Stats */}
-        {(loading || features.length > 0) && (
+        {(loading || features.length > 0) && !needsCredentials && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <StatCard value={totalFeatures} label="Unique features" icon={LayoutGrid} loading={loading} />
             <StatCard value={totalRequests} label="Total requests" icon={Hash} loading={loading} />
@@ -94,12 +122,12 @@ const Index = () => {
         )}
 
         {/* Bar chart */}
-        {(loading || top10.length > 0) && (
+        {(loading || top10.length > 0) && !needsCredentials && (
           <FeatureBarChart features={top10} categoryColorMap={categoryColorMap} loading={loading} />
         )}
 
         {/* Category grid */}
-        {(loading || categories.length > 0) && (
+        {(loading || categories.length > 0) && !needsCredentials && (
           <CategoryGrid
             categories={categories}
             activeCategory={activeCategory}
@@ -109,7 +137,7 @@ const Index = () => {
         )}
 
         {/* Feature table */}
-        {(loading || features.length > 0) && (
+        {(loading || features.length > 0) && !needsCredentials && (
           <FeatureTable
             features={features}
             activeCategory={activeCategory}
@@ -118,6 +146,13 @@ const Index = () => {
           />
         )}
       </div>
+
+      {/* Credentials dialog */}
+      <CredentialsDialog
+        open={showCredentials}
+        onClose={() => setShowCredentials(false)}
+        onSave={handleRefresh}
+      />
     </div>
   );
 };

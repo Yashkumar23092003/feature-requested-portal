@@ -35,21 +35,41 @@ export function getCategoryColorMap(categories: string[]): Record<string, { bg: 
   return map;
 }
 
+export function getStoredCredentials() {
+  return {
+    spreadsheetId: localStorage.getItem("gsheet_spreadsheet_id") || "",
+    apiKey: localStorage.getItem("gsheet_api_key") || "",
+  };
+}
+
+export function saveCredentials(spreadsheetId: string, apiKey: string) {
+  localStorage.setItem("gsheet_spreadsheet_id", spreadsheetId.trim());
+  localStorage.setItem("gsheet_api_key", apiKey.trim());
+}
+
+export function hasCredentials(): boolean {
+  const { spreadsheetId, apiKey } = getStoredCredentials();
+  return !!(spreadsheetId && apiKey);
+}
+
 export function useFeatureData() {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
+  const [needsCredentials, setNeedsCredentials] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setNeedsCredentials(false);
 
-    const spreadsheetId = import.meta.env.VITE_SPREADSHEET_ID;
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    const stored = getStoredCredentials();
+    const spreadsheetId = stored.spreadsheetId || import.meta.env.VITE_SPREADSHEET_ID;
+    const apiKey = stored.apiKey || import.meta.env.VITE_GOOGLE_API_KEY;
 
     if (!spreadsheetId || !apiKey) {
-      setError("Missing VITE_SPREADSHEET_ID or VITE_GOOGLE_API_KEY environment variables.");
+      setNeedsCredentials(true);
       setLoading(false);
       return;
     }
@@ -133,6 +153,7 @@ export function useFeatureData() {
     loading,
     error,
     lastSynced,
+    needsCredentials,
     refetch: fetchData,
     totalFeatures,
     totalRequests,
