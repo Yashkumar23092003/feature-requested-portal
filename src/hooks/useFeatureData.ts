@@ -156,7 +156,7 @@ export function useFeatureData() {
   }, [features]);
 
   const top10 = useMemo(
-    () => [...features].sort((a, b) => b.count - a.count),
+    () => [...features].filter((f) => f.count >= 1).sort((a, b) => b.count - a.count),
     [features]
   );
 
