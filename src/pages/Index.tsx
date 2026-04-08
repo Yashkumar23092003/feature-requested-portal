@@ -207,38 +207,66 @@ const Index = () => {
 
         {/* Stat strip */}
         {(loading || features.length > 0) && !needsCredentials && (
-          <StatStrip
-            totalFeatures={totalFeatures}
-            totalRequests={totalRequests}
-            topCategory={topCategory}
-            mostRequested={mostRequested}
-            loading={loading}
-          />
+          <div className={`relative ${sectionClass(100)}`} style={sectionStyle(100)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "600ms" }}>
+                {SECTION_LABELS.stats}
+              </span>
+            )}
+            <StatStrip
+              totalFeatures={totalFeatures}
+              totalRequests={totalRequests}
+              topCategory={topCategory}
+              mostRequested={mostRequested}
+              loading={loading}
+            />
+          </div>
         )}
 
         {/* Bar chart */}
         {(loading || top10.length > 0) && !needsCredentials && (
-          <FeatureBarChart features={top10} categoryColorMap={categoryColorMap} loading={loading} />
+          <div className={`relative ${sectionClass(250)}`} style={sectionStyle(250)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "850ms" }}>
+                {SECTION_LABELS.chart}
+              </span>
+            )}
+            <FeatureBarChart features={top10} categoryColorMap={categoryColorMap} loading={loading} />
+          </div>
         )}
 
         {/* Category pills */}
         {(loading || categories.length > 0) && !needsCredentials && (
-          <CategoryPills
-            categories={categories}
-            activeCategory={activeCategory}
-            onCategoryClick={handleCategoryClick}
-            loading={loading}
-          />
+          <div className={`relative ${sectionClass(400)}`} style={sectionStyle(400)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "1100ms" }}>
+                {SECTION_LABELS.categories}
+              </span>
+            )}
+            <CategoryPills
+              categories={categories}
+              activeCategory={activeCategory}
+              onCategoryClick={handleCategoryClick}
+              loading={loading}
+            />
+          </div>
         )}
 
         {/* Feature table */}
         {(loading || features.length > 0) && !needsCredentials && (
-          <FeatureTable
-            features={features}
-            activeCategory={activeCategory}
-            onClearCategory={() => setActiveCategory(null)}
-            loading={loading}
-          />
+          <div className={`relative ${sectionClass(550)}`} style={sectionStyle(550)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "1350ms" }}>
+                {SECTION_LABELS.table}
+              </span>
+            )}
+            <FeatureTable
+              features={features}
+              activeCategory={activeCategory}
+              onClearCategory={() => setActiveCategory(null)}
+              loading={loading}
+            />
+          </div>
         )}
 
       </div>
