@@ -30,7 +30,7 @@ export const PROVIDERS: {
     id: "default",
     label: "Default",
     placeholder: "",
-    hint: "Built-in AI — no key needed. Powered by the server.",
+    hint: "Built-in AI — no key needed. Uses Lovable AI.",
     requiresKey: false,
   },
   {
