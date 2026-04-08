@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { RefreshCw, LayoutGrid, Hash, Crown, TrendingUp, AlertTriangle, Settings } from "lucide-react";
+import { RefreshCw, LayoutGrid, Hash, Crown, TrendingUp, AlertTriangle, Settings, Brain } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useFeatureData } from "@/hooks/useFeatureData";
 import StatCard from "@/components/StatCard";
 import FeatureBarChart from "@/components/FeatureBarChart";
@@ -30,72 +31,77 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <div className="max-w-5xl mx-auto px-5 sm:px-8 py-10 space-y-7">
+
         {/* Error banner */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-destructive">
-              <AlertTriangle size={16} />
+          <div className="bg-destructive/8 border border-destructive/15 rounded-xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2.5 text-sm text-destructive">
+              <AlertTriangle size={15} />
               {error}
             </div>
-            <button
-              onClick={handleRefresh}
-              className="text-xs font-medium text-destructive hover:underline"
-            >
+            <button onClick={handleRefresh} className="text-xs font-medium text-destructive hover:underline">
               Retry
             </button>
           </div>
         )}
 
         {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <header className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Feature Requests</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">What your clients are asking for</p>
+            <h1 className="text-xl font-semibold text-foreground tracking-tight">Feature Requests</h1>
+            {lastSynced && !loading && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Synced {lastSynced.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {!loading && !error && !needsCredentials && (
-              <span className="text-xs font-medium bg-primary/10 text-primary px-3 py-1 rounded-full">
-                {totalFeatures} features · {totalRequests} total requests
+              <span className="hidden sm:inline text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+                {totalFeatures} features · {totalRequests} requests
               </span>
             )}
+            <Link
+              to="/brain"
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 card-shadow transition-all"
+            >
+              <Brain size={13} />
+              PM Brain
+            </Link>
             <button
               onClick={() => setShowCredentials(true)}
-              className="p-2 rounded-md border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+              className="p-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 card-shadow transition-all"
               title="Sheet credentials"
             >
-              <Settings size={16} />
+              <Settings size={15} />
             </button>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2 rounded-md border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors disabled:opacity-50"
-              title="Refresh data"
+              className="p-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 card-shadow transition-all disabled:opacity-40"
+              title="Refresh"
             >
-              <RefreshCw size={16} className={refreshing ? "animate-spin-slow" : ""} />
+              <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
             </button>
           </div>
         </header>
 
-        {lastSynced && !loading && (
-          <p className="text-xs text-muted-foreground -mt-4">
-            Last synced {lastSynced.toLocaleTimeString()}
-          </p>
-        )}
-
-        {/* Needs credentials prompt */}
+        {/* Needs credentials */}
         {needsCredentials && !loading && (
-          <div className="bg-card border border-border rounded-lg p-12 text-center space-y-4">
-            <Settings size={32} className="mx-auto text-muted-foreground" />
+          <div className="bg-card border border-border rounded-2xl p-14 text-center space-y-4 card-shadow">
+            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto">
+              <Settings size={22} className="text-muted-foreground" />
+            </div>
             <div>
-              <p className="text-foreground font-medium">Connect your Google Sheet</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Add your Spreadsheet ID and API Key to start fetching feature requests.
+              <p className="font-medium text-foreground">Connect your Google Sheet</p>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
+                Add your Spreadsheet ID and API Key to start loading feature requests.
               </p>
             </div>
             <button
               onClick={() => setShowCredentials(true)}
-              className="px-5 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="inline-flex px-5 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Add Credentials
             </button>
@@ -104,8 +110,8 @@ const Index = () => {
 
         {/* Empty state */}
         {!loading && !error && !needsCredentials && features.length === 0 && (
-          <div className="bg-card border border-border rounded-lg p-12 text-center">
-            <p className="text-muted-foreground">
+          <div className="bg-card border border-border rounded-2xl p-14 text-center card-shadow">
+            <p className="text-sm text-muted-foreground">
               No feature requests yet. Data will appear here after your first call is processed.
             </p>
           </div>
@@ -145,9 +151,9 @@ const Index = () => {
             loading={loading}
           />
         )}
+
       </div>
 
-      {/* Credentials dialog */}
       <CredentialsDialog
         open={showCredentials}
         onClose={() => setShowCredentials(false)}

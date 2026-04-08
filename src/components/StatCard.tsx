@@ -10,22 +10,23 @@ interface StatCardProps {
 const StatCard = ({ value, label, icon: Icon, loading }: StatCardProps) => {
   if (loading) {
     return (
-      <div className="bg-card border border-border rounded-lg p-5">
-        <div className="skeleton-pulse h-8 w-20 mb-2" />
-        <div className="skeleton-pulse h-4 w-28" />
+      <div className="bg-card border border-border rounded-2xl p-5 card-shadow">
+        <div className="skeleton-pulse h-3 w-3 rounded-full mb-4" />
+        <div className="skeleton-pulse h-7 w-16 mb-2" />
+        <div className="skeleton-pulse h-3 w-24" />
       </div>
     );
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-5 flex items-start gap-4">
-      <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">
-        <Icon size={20} />
+    <div className="bg-card border border-border rounded-2xl p-5 card-shadow group hover:border-primary/20 transition-all duration-200">
+      <div className="text-muted-foreground/60 mb-3 group-hover:text-primary/60 transition-colors">
+        <Icon size={15} strokeWidth={2} />
       </div>
-      <div className="min-w-0">
-        <div className="text-2xl font-bold text-foreground truncate">{value}</div>
-        <div className="text-sm text-muted-foreground mt-0.5">{label}</div>
+      <div className="text-2xl font-semibold text-foreground tracking-tight truncate leading-none mb-1.5">
+        {value}
       </div>
+      <div className="text-xs text-muted-foreground font-medium">{label}</div>
     </div>
   );
 };

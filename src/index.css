@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,79 +6,74 @@
 
 @layer base {
   :root {
-    --background: 40 7% 96%;
-    --foreground: 48 5% 10%;
+    --background: 240 10% 97%;
+    --foreground: 240 10% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 48 5% 10%;
-    --card-border: 40 4% 92%;
+    --card-foreground: 240 10% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 48 5% 10%;
+    --popover-foreground: 240 10% 10%;
 
-    --primary: 243 76% 59%;
+    --primary: 245 70% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 4% 95%;
-    --secondary-foreground: 48 5% 10%;
+    --secondary: 240 6% 95%;
+    --secondary-foreground: 240 10% 10%;
 
-    --muted: 40 4% 95%;
-    --muted-foreground: 45 2% 41%;
+    --muted: 240 6% 95%;
+    --muted-foreground: 240 5% 48%;
 
-    --accent: 243 76% 59%;
+    --accent: 245 70% 58%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 80% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 4% 92%;
-    --input: 40 4% 92%;
-    --ring: 243 76% 59%;
+    --border: 240 6% 91%;
+    --input: 240 6% 91%;
+    --ring: 245 70% 58%;
 
     --radius: 0.75rem;
 
-    /* Category pastel colors */
-    --cat-1: 243 60% 90%;
-    --cat-2: 160 50% 88%;
-    --cat-3: 30 70% 90%;
-    --cat-4: 340 50% 90%;
-    --cat-5: 200 55% 88%;
-    --cat-6: 90 40% 88%;
-    --cat-7: 270 45% 90%;
-    --cat-8: 15 60% 90%;
+    /* Category palette */
+    --cat-1: 245 55% 93%;
+    --cat-2: 160 45% 90%;
+    --cat-3: 35 65% 91%;
+    --cat-4: 340 48% 91%;
+    --cat-5: 200 50% 90%;
+    --cat-6: 95 38% 90%;
+    --cat-7: 275 42% 91%;
+    --cat-8: 18 55% 91%;
 
-    --cat-1-bar: 243 60% 72%;
-    --cat-2-bar: 160 45% 62%;
-    --cat-3-bar: 30 60% 68%;
-    --cat-4-bar: 340 45% 70%;
-    --cat-5-bar: 200 50% 62%;
-    --cat-6-bar: 90 35% 60%;
-    --cat-7-bar: 270 40% 70%;
-    --cat-8-bar: 15 55% 68%;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --cat-1-bar: 245 60% 65%;
+    --cat-2-bar: 160 42% 55%;
+    --cat-3-bar: 35 58% 62%;
+    --cat-4-bar: 340 44% 63%;
+    --cat-5-bar: 200 48% 57%;
+    --cat-6-bar: 95 34% 56%;
+    --cat-7-bar: 275 40% 64%;
+    --cat-8-bar: 18 52% 62%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
+  * { @apply border-border; }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
 
 @layer utilities {
   .skeleton-pulse {
-    @apply animate-pulse bg-muted rounded-md;
+    @apply animate-pulse bg-muted rounded-lg;
+  }
+  .card-shadow {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  }
+  .card-shadow-md {
+    box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.06), 0 2px 6px -2px rgb(0 0 0 / 0.04);
   }
 }
