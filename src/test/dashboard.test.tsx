@@ -20,6 +20,8 @@ vi.mock("@/hooks/useFeatureData", () => ({
     top10: [],
     categoryColorMap: {},
   }),
+  getStoredCredentials: () => ({ spreadsheetId: "", apiKey: "" }),
+  saveCredentials: vi.fn(),
 }));
 
 function renderIndex() {
