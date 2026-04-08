@@ -182,8 +182,8 @@ const Index = () => {
                   { icon: Layers, title: "Category View", desc: "Filter by category to spot patterns across themes" },
                   { icon: ListFilter, title: "Full Table", desc: "Search, sort, and explore every request in detail" },
                   { icon: Brain, title: "PM Brain", desc: "AI-powered prioritization matched to your expertise" },
-                ].map((item) => (
-                  <div key={item.title} className="text-center space-y-2 p-3">
+                ].map((item, i) => (
+                  <div key={item.title} className="text-center space-y-2 p-3 animate-fade-up" style={{ animationDelay: `${300 + i * 120}ms` }}>
                     <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center mx-auto">
                       <item.icon size={16} className="text-muted-foreground" />
                     </div>
