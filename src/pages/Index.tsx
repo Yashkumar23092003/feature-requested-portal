@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RefreshCw, Settings, Brain, Sparkles, Moon, Sun } from "lucide-react";
+import { RefreshCw, Settings, Brain, Sparkles, Moon, Sun, BarChart3, ListFilter, Layers, Zap } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Link } from "react-router-dom";
 import { useFeatureData } from "@/hooks/useFeatureData";
@@ -126,22 +126,48 @@ const Index = () => {
 
         {/* Needs credentials */}
         {needsCredentials && !loading && (
-          <div className="border border-border rounded-2xl p-16 text-center space-y-4">
-            <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center mx-auto">
-              <Settings size={20} className="text-muted-foreground" />
+          <div className="border border-border rounded-2xl p-10 space-y-8">
+            {/* Hero section */}
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+                <Zap size={22} className="text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-base">Connect your Google Sheet</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  Paste your Spreadsheet ID and API Key — your dashboard will populate instantly.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCredentials(true)}
+                className="inline-flex px-5 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Add Credentials
+              </button>
             </div>
-            <div>
-              <p className="font-medium text-foreground text-sm">Connect your Google Sheet</p>
-              <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
-                Add your Spreadsheet ID and API Key to start loading feature requests.
+
+            {/* What you'll see */}
+            <div className="border-t border-border pt-6">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-4 text-center">
+                Here's what you'll get
               </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {[
+                  { icon: BarChart3, title: "Top Features", desc: "See the most requested features ranked by volume" },
+                  { icon: Layers, title: "Category View", desc: "Filter by category to spot patterns across themes" },
+                  { icon: ListFilter, title: "Full Table", desc: "Search, sort, and explore every request in detail" },
+                  { icon: Brain, title: "PM Brain", desc: "AI-powered prioritization matched to your expertise" },
+                ].map((item) => (
+                  <div key={item.title} className="text-center space-y-2 p-3">
+                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center mx-auto">
+                      <item.icon size={16} className="text-muted-foreground" />
+                    </div>
+                    <p className="text-xs font-medium text-foreground">{item.title}</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <button
-              onClick={() => setShowCredentials(true)}
-              className="inline-flex px-5 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Add Credentials
-            </button>
           </div>
         )}
 
