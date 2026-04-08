@@ -101,6 +101,7 @@ const CredentialsDialog = ({ open, onClose, onSave }: CredentialsDialogProps) =>
               Exact name of the tab in your Google Sheet (case-sensitive)
             </p>
           </div>
+        </div>
 
         <div className="flex items-center gap-2 pt-1">
           <button
