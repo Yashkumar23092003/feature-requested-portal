@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { RefreshCw, Settings, Brain } from "lucide-react";
+import { RefreshCw, Settings, Brain, Sparkles } from "lucide-react";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Link } from "react-router-dom";
 import { useFeatureData } from "@/hooks/useFeatureData";
 import StatStrip from "@/components/StatStrip";
