@@ -55,6 +55,32 @@ const Index = () => {
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <button className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-muted-foreground bg-muted/50 hover:bg-muted transition-colors">
+                  <Sparkles size={12} />
+                  Coming Soon
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80" align="end">
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-foreground">What's next for this tool</p>
+                  {[
+                    { name: "Trend Tracking", reason: "See which requests are accelerating so you can get ahead of demand, not react to it." },
+                    { name: "Client Attribution", reason: "Tie requests to accounts and revenue so you prioritize by business impact, not just volume." },
+                    { name: "Feature Status Tracking", reason: "Mark features as Planned / In Progress / Shipped so stakeholders see progress without asking." },
+                    { name: "Export & Share", reason: "One-click PDF/CSV export to drop into board decks and stakeholder updates." },
+                    { name: "Per-Feature Notes", reason: "Attach context like blockers and dependencies directly to each request." },
+                    { name: "Smart Alerts", reason: "Get notified when a feature crosses a request threshold so nothing slips through." },
+                  ].map((f) => (
+                    <div key={f.name}>
+                      <p className="text-xs font-medium text-foreground">{f.name}</p>
+                      <p className="text-[11px] text-muted-foreground leading-snug">{f.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
             <Link
               to="/brain"
               className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
