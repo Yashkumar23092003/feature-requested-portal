@@ -17,30 +17,46 @@ export interface Recommendation {
   reason: string;
 }
 
-export type AIProvider = "anthropic" | "openai" | "gemini";
+export type AIProvider = "default" | "anthropic" | "openai" | "gemini";
 
-export const PROVIDERS: { id: AIProvider; label: string; placeholder: string; hint: string }[] = [
+export const PROVIDERS: {
+  id: AIProvider;
+  label: string;
+  placeholder: string;
+  hint: string;
+  requiresKey: boolean;
+}[] = [
+  {
+    id: "default",
+    label: "Default",
+    placeholder: "",
+    hint: "Built-in AI — no key needed. Powered by the server.",
+    requiresKey: false,
+  },
   {
     id: "anthropic",
     label: "Claude",
     placeholder: "sk-ant-...",
     hint: "Anthropic API key — console.anthropic.com",
+    requiresKey: true,
   },
   {
     id: "openai",
     label: "OpenAI",
     placeholder: "sk-...",
     hint: "OpenAI API key — platform.openai.com/api-keys",
+    requiresKey: true,
   },
   {
     id: "gemini",
     label: "Gemini",
     placeholder: "AIza...",
     hint: "Google AI Studio key — aistudio.google.com/app/apikey",
+    requiresKey: true,
   },
 ];
 
-const DOCS_KEY = "pm_brain_docs";
+const DOCS_KEY     = "pm_brain_docs";
 const PROVIDER_KEY = "pm_brain_provider";
 
 function storageKeyFor(provider: AIProvider) {
@@ -60,7 +76,7 @@ function saveDocs(docs: RefDoc[]) {
 }
 
 export function getProvider(): AIProvider {
-  return (localStorage.getItem(PROVIDER_KEY) as AIProvider) || "anthropic";
+  return (localStorage.getItem(PROVIDER_KEY) as AIProvider) || "default";
 }
 
 export function saveProvider(p: AIProvider) {
@@ -75,7 +91,34 @@ export function saveApiKey(provider: AIProvider, key: string) {
   localStorage.setItem(storageKeyFor(provider), key.trim());
 }
 
-// ── Per-provider API call ────────────────────────────────────────────────────
+// ── Per-provider API calls ───────────────────────────────────────────────────
+
+async function callDefault(prompt: string): Promise<string> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Supabase is not configured. Add your own API key in Settings to use a different provider.");
+  }
+
+  const res = await fetch(`${supabaseUrl}/functions/v1/ai-prioritize`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${supabaseKey}`,
+      "apikey": supabaseKey,
+    },
+    body: JSON.stringify({ prompt }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error || `Server error ${res.status}`);
+  }
+
+  return data.text ?? "";
+}
 
 async function callAnthropic(apiKey: string, prompt: string): Promise<string> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -99,7 +142,7 @@ async function callAnthropic(apiKey: string, prompt: string): Promise<string> {
     throw new Error(msg);
   }
   const data = await res.json();
-  return data.content?.[0]?.text || "";
+  return data.content?.[0]?.text ?? "";
 }
 
 async function callOpenAI(apiKey: string, prompt: string): Promise<string> {
@@ -122,7 +165,7 @@ async function callOpenAI(apiKey: string, prompt: string): Promise<string> {
     throw new Error(msg);
   }
   const data = await res.json();
-  return data.choices?.[0]?.message?.content || "";
+  return data.choices?.[0]?.message?.content ?? "";
 }
 
 async function callGemini(apiKey: string, prompt: string): Promise<string> {
@@ -142,12 +185,13 @@ async function callGemini(apiKey: string, prompt: string): Promise<string> {
     throw new Error(msg);
   }
   const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 async function callProvider(provider: AIProvider, apiKey: string, prompt: string): Promise<string> {
+  if (provider === "default")   return callDefault(prompt);
   if (provider === "anthropic") return callAnthropic(apiKey, prompt);
-  if (provider === "openai") return callOpenAI(apiKey, prompt);
+  if (provider === "openai")    return callOpenAI(apiKey, prompt);
   return callGemini(apiKey, prompt);
 }
 
@@ -184,11 +228,11 @@ export function usePMBrain() {
   const analyzeWithAI = useCallback(
     async (features: Feature[]) => {
       const provider = getProvider();
-      const apiKey = getApiKey(provider);
+      const meta = PROVIDERS.find((p) => p.id === provider)!;
+      const apiKey = meta.requiresKey ? getApiKey(provider) : "";
 
-      if (!apiKey) {
-        const label = PROVIDERS.find((p) => p.id === provider)?.label ?? provider;
-        setAnalyzeError(`No API key set for ${label}. Add it in Settings below.`);
+      if (meta.requiresKey && !apiKey) {
+        setAnalyzeError(`No API key set for ${meta.label}. Add it in Settings below, or switch to Default.`);
         return;
       }
       if (documents.length === 0) {

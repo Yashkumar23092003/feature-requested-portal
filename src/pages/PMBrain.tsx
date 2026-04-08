@@ -36,6 +36,7 @@ const PMBrain = () => {
   // Settings state — one key slot per provider, all persisted independently
   const [selectedProvider, setSelectedProvider] = useState<AIProvider>(getProvider);
   const [keyValues, setKeyValues] = useState<Record<AIProvider, string>>(() => ({
+    default:   "",
     anthropic: getApiKey("anthropic"),
     openai:    getApiKey("openai"),
     gemini:    getApiKey("gemini"),
@@ -314,53 +315,68 @@ const PMBrain = () => {
               </div>
             </div>
 
-            {/* Key input for selected provider */}
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-2">
-                {currentProviderMeta.label} API Key
-              </label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type={showKey ? "text" : "password"}
-                    value={keyValues[selectedProvider]}
-                    onChange={(e) =>
-                      setKeyValues((prev) => ({ ...prev, [selectedProvider]: e.target.value }))
-                    }
-                    placeholder={currentProviderMeta.placeholder}
-                    className="w-full px-3 py-2 pr-10 text-sm border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
-                  />
+            {/* Default provider — no key needed */}
+            {selectedProvider === "default" ? (
+              <div className="flex items-start gap-3 bg-primary/5 border border-primary/15 rounded-xl px-4 py-3.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">No API key required</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    AI runs server-side via the built-in integration. Just upload your docs and hit Analyze.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* Key input for other providers */
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-2">
+                  {currentProviderMeta.label} API Key
+                </label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type={showKey ? "text" : "password"}
+                      value={keyValues[selectedProvider] ?? ""}
+                      onChange={(e) =>
+                        setKeyValues((prev) => ({ ...prev, [selectedProvider]: e.target.value }))
+                      }
+                      placeholder={currentProviderMeta.placeholder}
+                      className="w-full px-3 py-2 pr-10 text-sm border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowKey(!showKey)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
                   <button
-                    type="button"
-                    onClick={() => setShowKey(!showKey)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={handleSaveKey}
+                    disabled={!(keyValues[selectedProvider] ?? "").trim()}
+                    className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 min-w-[72px]"
                   >
-                    {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {savedProvider === selectedProvider ? "Saved!" : "Save"}
                   </button>
                 </div>
-                <button
-                  onClick={handleSaveKey}
-                  disabled={!keyValues[selectedProvider].trim()}
-                  className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 min-w-[72px]"
-                >
-                  {savedProvider === selectedProvider ? "Saved!" : "Save"}
-                </button>
+                <p className="text-xs text-muted-foreground mt-1.5">{currentProviderMeta.hint}</p>
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5">{currentProviderMeta.hint}</p>
-            </div>
+            )}
 
             {/* Saved key indicators for other providers */}
             <div className="flex flex-wrap gap-2">
-              {PROVIDERS.filter((p) => p.id !== selectedProvider && getApiKey(p.id)).map((p) => (
+              {PROVIDERS.filter((p) => p.requiresKey && p.id !== selectedProvider && getApiKey(p.id)).map((p) => (
                 <span key={p.id} className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
                   {p.label} key saved
                 </span>
               ))}
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Keys are stored locally in your browser and only sent to the respective AI provider.
-            </p>
+            {selectedProvider !== "default" && (
+              <p className="text-xs text-muted-foreground">
+                Keys are stored locally in your browser and only sent to the respective AI provider.
+              </p>
+            )}
           </div>
         </section>
 
