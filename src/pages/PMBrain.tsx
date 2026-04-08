@@ -221,7 +221,7 @@ const PMBrain = () => {
               <h2 className="text-sm font-semibold text-foreground tracking-tight">AI Prioritization</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {features.length > 0
-                  ? `${activeProviderLabel} will rank the ${features.length} feature requests by your expertise fit`
+                  ? `${activeProviderLabel} will rank the top 5 features by your expertise fit`
                   : `${activeProviderLabel} will rank feature requests by your expertise fit`}
               </p>
             </div>

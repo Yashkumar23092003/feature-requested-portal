@@ -260,7 +260,7 @@ export function usePMBrain() {
         )
         .join("\n");
 
-      const prompt = `You are a product prioritization assistant. A PM has shared documents describing their domain expertise and background. Given a list of customer feature requests, identify the top 10 features this PM is best positioned to own and deliver successfully.
+      const prompt = `You are a product prioritization assistant. A PM has shared documents describing their domain expertise and background. Given a list of customer feature requests, identify the top 5 features this PM is best positioned to own and deliver successfully.
 
 ## PM Expertise & Background
 ${expertiseContext}
@@ -269,7 +269,7 @@ ${expertiseContext}
 ${featureList}
 
 ## Instructions
-Return ONLY a valid JSON array (no markdown, no explanation outside JSON) with exactly up to 10 items. Each item must have:
+Return ONLY a valid JSON array (no markdown, no explanation outside JSON) with exactly up to 5 items. Each item must have:
 - "feature_key": string — exact value from the input
 - "normalized_feature_name": string — exact name from the input
 - "category": string — exact category from the input
