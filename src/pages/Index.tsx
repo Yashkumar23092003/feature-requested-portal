@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { RefreshCw, Settings, Brain, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { RefreshCw, Settings, Brain, Sparkles, Moon, Sun } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Link } from "react-router-dom";
 import { useFeatureData } from "@/hooks/useFeatureData";
@@ -19,6 +19,17 @@ const Index = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showCredentials, setShowCredentials] = useState(false);
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -55,6 +66,13 @@ const Index = () => {
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setDark((d) => !d)}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="Toggle dark mode"
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
             <HoverCard>
               <HoverCardTrigger asChild>
                 <button className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-muted-foreground bg-muted/50 hover:bg-muted transition-colors">
