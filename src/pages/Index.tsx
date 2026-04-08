@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { RefreshCw, LayoutGrid, Hash, Crown, TrendingUp, AlertTriangle, Settings, Brain } from "lucide-react";
+import { RefreshCw, Settings, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useFeatureData } from "@/hooks/useFeatureData";
-import StatCard from "@/components/StatCard";
+import StatStrip from "@/components/StatStrip";
 import FeatureBarChart from "@/components/FeatureBarChart";
-import CategoryGrid from "@/components/CategoryGrid";
+import CategoryPills from "@/components/CategoryPills";
 import FeatureTable from "@/components/FeatureTable";
 import CredentialsDialog from "@/components/CredentialsDialog";
 
@@ -31,15 +31,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-5 sm:px-8 py-10 space-y-7">
+      <div className="max-w-[960px] mx-auto px-6 sm:px-10 py-12 space-y-8">
 
         {/* Error banner */}
         {error && (
-          <div className="bg-destructive/8 border border-destructive/15 rounded-xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 text-sm text-destructive">
-              <AlertTriangle size={15} />
-              {error}
-            </div>
+          <div className="bg-destructive/5 border border-destructive/10 rounded-xl px-5 py-3.5 flex items-center justify-between">
+            <span className="text-sm text-destructive">{error}</span>
             <button onClick={handleRefresh} className="text-xs font-medium text-destructive hover:underline">
               Retry
             </button>
@@ -47,54 +44,49 @@ const Index = () => {
         )}
 
         {/* Header */}
-        <header className="flex items-center justify-between gap-4">
+        <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-foreground tracking-tight">Feature Requests</h1>
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">Feature Requests</h1>
             {lastSynced && !loading && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Synced {lastSynced.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                Updated {lastSynced.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {!loading && !error && !needsCredentials && (
-              <span className="hidden sm:inline text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
-                {totalFeatures} features · {totalRequests} requests
-              </span>
-            )}
+          <div className="flex items-center gap-1.5">
             <Link
               to="/brain"
-              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 card-shadow transition-all"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="PM Brain"
             >
-              <Brain size={13} />
-              PM Brain
+              <Brain size={16} />
             </Link>
             <button
               onClick={() => setShowCredentials(true)}
-              className="p-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 card-shadow transition-all"
-              title="Sheet credentials"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="Settings"
             >
-              <Settings size={15} />
+              <Settings size={16} />
             </button>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 card-shadow transition-all disabled:opacity-40"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-30"
               title="Refresh"
             >
-              <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
+              <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
             </button>
           </div>
         </header>
 
         {/* Needs credentials */}
         {needsCredentials && !loading && (
-          <div className="bg-card border border-border rounded-2xl p-14 text-center space-y-4 card-shadow">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto">
-              <Settings size={22} className="text-muted-foreground" />
+          <div className="border border-border rounded-2xl p-16 text-center space-y-4">
+            <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center mx-auto">
+              <Settings size={20} className="text-muted-foreground" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Connect your Google Sheet</p>
+              <p className="font-medium text-foreground text-sm">Connect your Google Sheet</p>
               <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
                 Add your Spreadsheet ID and API Key to start loading feature requests.
               </p>
@@ -110,21 +102,22 @@ const Index = () => {
 
         {/* Empty state */}
         {!loading && !error && !needsCredentials && features.length === 0 && (
-          <div className="bg-card border border-border rounded-2xl p-14 text-center card-shadow">
+          <div className="border border-border rounded-2xl p-16 text-center">
             <p className="text-sm text-muted-foreground">
               No feature requests yet. Data will appear here after your first call is processed.
             </p>
           </div>
         )}
 
-        {/* Stats */}
+        {/* Stat strip */}
         {(loading || features.length > 0) && !needsCredentials && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <StatCard value={totalFeatures} label="Unique features" icon={LayoutGrid} loading={loading} />
-            <StatCard value={totalRequests} label="Total requests" icon={Hash} loading={loading} />
-            <StatCard value={topCategory} label="Top category" icon={Crown} loading={loading} />
-            <StatCard value={mostRequested} label="Most requested" icon={TrendingUp} loading={loading} />
-          </div>
+          <StatStrip
+            totalFeatures={totalFeatures}
+            totalRequests={totalRequests}
+            topCategory={topCategory}
+            mostRequested={mostRequested}
+            loading={loading}
+          />
         )}
 
         {/* Bar chart */}
@@ -132,9 +125,9 @@ const Index = () => {
           <FeatureBarChart features={top10} categoryColorMap={categoryColorMap} loading={loading} />
         )}
 
-        {/* Category grid */}
+        {/* Category pills */}
         {(loading || categories.length > 0) && !needsCredentials && (
-          <CategoryGrid
+          <CategoryPills
             categories={categories}
             activeCategory={activeCategory}
             onCategoryClick={handleCategoryClick}
