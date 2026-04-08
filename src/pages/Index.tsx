@@ -9,6 +9,13 @@ import CategoryPills from "@/components/CategoryPills";
 import FeatureTable from "@/components/FeatureTable";
 import CredentialsDialog from "@/components/CredentialsDialog";
 
+const SECTION_LABELS: Record<string, string> = {
+  stats: "Quick overview of your request data",
+  chart: "Most requested features at a glance",
+  categories: "Filter by category to find patterns",
+  table: "Full list — search and explore",
+};
+
 const Index = () => {
   const {
     features, loading, error, lastSynced, needsCredentials, refetch,
@@ -26,6 +33,16 @@ const Index = () => {
     return false;
   });
 
+  const isFirstVisit = useState(() => {
+    if (typeof window === "undefined") return false;
+    const visited = localStorage.getItem("fr-visited");
+    if (!visited) {
+      localStorage.setItem("fr-visited", "true");
+      return true;
+    }
+    return false;
+  })[0];
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
     localStorage.setItem("theme", dark ? "dark" : "light");
@@ -40,6 +57,14 @@ const Index = () => {
   const handleCategoryClick = (name: string) => {
     setActiveCategory((prev) => (prev === name ? null : name));
   };
+
+  const sectionClass = (delay: number) =>
+    isFirstVisit
+      ? `animate-fade-up`
+      : "";
+
+  const sectionStyle = (delay: number) =>
+    isFirstVisit ? { animationDelay: `${delay}ms` } : {};
 
   return (
     <div className="min-h-screen bg-background">
@@ -157,8 +182,8 @@ const Index = () => {
                   { icon: Layers, title: "Category View", desc: "Filter by category to spot patterns across themes" },
                   { icon: ListFilter, title: "Full Table", desc: "Search, sort, and explore every request in detail" },
                   { icon: Brain, title: "PM Brain", desc: "AI-powered prioritization matched to your expertise" },
-                ].map((item) => (
-                  <div key={item.title} className="text-center space-y-2 p-3">
+                ].map((item, i) => (
+                  <div key={item.title} className="text-center space-y-2 p-3 animate-fade-up" style={{ animationDelay: `${300 + i * 120}ms` }}>
                     <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center mx-auto">
                       <item.icon size={16} className="text-muted-foreground" />
                     </div>
@@ -182,38 +207,66 @@ const Index = () => {
 
         {/* Stat strip */}
         {(loading || features.length > 0) && !needsCredentials && (
-          <StatStrip
-            totalFeatures={totalFeatures}
-            totalRequests={totalRequests}
-            topCategory={topCategory}
-            mostRequested={mostRequested}
-            loading={loading}
-          />
+          <div className={`relative ${sectionClass(100)}`} style={sectionStyle(100)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "600ms" }}>
+                {SECTION_LABELS.stats}
+              </span>
+            )}
+            <StatStrip
+              totalFeatures={totalFeatures}
+              totalRequests={totalRequests}
+              topCategory={topCategory}
+              mostRequested={mostRequested}
+              loading={loading}
+            />
+          </div>
         )}
 
         {/* Bar chart */}
         {(loading || top10.length > 0) && !needsCredentials && (
-          <FeatureBarChart features={top10} categoryColorMap={categoryColorMap} loading={loading} />
+          <div className={`relative ${sectionClass(250)}`} style={sectionStyle(250)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "850ms" }}>
+                {SECTION_LABELS.chart}
+              </span>
+            )}
+            <FeatureBarChart features={top10} categoryColorMap={categoryColorMap} loading={loading} />
+          </div>
         )}
 
         {/* Category pills */}
         {(loading || categories.length > 0) && !needsCredentials && (
-          <CategoryPills
-            categories={categories}
-            activeCategory={activeCategory}
-            onCategoryClick={handleCategoryClick}
-            loading={loading}
-          />
+          <div className={`relative ${sectionClass(400)}`} style={sectionStyle(400)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "1100ms" }}>
+                {SECTION_LABELS.categories}
+              </span>
+            )}
+            <CategoryPills
+              categories={categories}
+              activeCategory={activeCategory}
+              onCategoryClick={handleCategoryClick}
+              loading={loading}
+            />
+          </div>
         )}
 
         {/* Feature table */}
         {(loading || features.length > 0) && !needsCredentials && (
-          <FeatureTable
-            features={features}
-            activeCategory={activeCategory}
-            onClearCategory={() => setActiveCategory(null)}
-            loading={loading}
-          />
+          <div className={`relative ${sectionClass(550)}`} style={sectionStyle(550)}>
+            {isFirstVisit && (
+              <span className="absolute -top-5 left-0 text-[10px] font-medium text-primary/70 animate-label-fade" style={{ animationDelay: "1350ms" }}>
+                {SECTION_LABELS.table}
+              </span>
+            )}
+            <FeatureTable
+              features={features}
+              activeCategory={activeCategory}
+              onClearCategory={() => setActiveCategory(null)}
+              loading={loading}
+            />
+          </div>
         )}
 
       </div>
