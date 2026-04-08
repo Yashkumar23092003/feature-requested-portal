@@ -12,12 +12,13 @@ const CredentialsDialog = ({ open, onClose, onSave }: CredentialsDialogProps) =>
   const stored = getStoredCredentials();
   const [spreadsheetId, setSpreadsheetId] = useState(stored.spreadsheetId);
   const [apiKey, setApiKey] = useState(stored.apiKey);
+  const [sheetTab, setSheetTab] = useState(stored.sheetTab || "Feature memory");
   const [showKey, setShowKey] = useState(false);
 
   if (!open) return null;
 
   const handleSave = () => {
-    saveCredentials(spreadsheetId, apiKey);
+    saveCredentials(spreadsheetId, apiKey, sheetTab);
     onSave();
     onClose();
   };
@@ -82,6 +83,22 @@ const CredentialsDialog = ({ open, onClose, onSave }: CredentialsDialogProps) =>
                 Get an API key <ExternalLink size={10} />
               </a>
               {" "}— enable Google Sheets API first
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Sheet Tab Name
+            </label>
+            <input
+              type="text"
+              value={sheetTab}
+              onChange={(e) => setSheetTab(e.target.value)}
+              placeholder="Feature memory"
+              className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Exact name of the tab in your Google Sheet (case-sensitive)
             </p>
           </div>
         </div>
