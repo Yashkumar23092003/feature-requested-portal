@@ -16,80 +16,43 @@ serve(async (req) => {
       return json({ error: "Missing prompt." }, 400);
     }
 
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
-    const openaiKey    = Deno.env.get("OPENAI_API_KEY");
-    const geminiKey    = Deno.env.get("GEMINI_API_KEY");
-
-    let text = "";
-
-    if (anthropicKey) {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": anthropicKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 2048,
-          messages: [{ role: "user", content: prompt }],
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error?.message || `Anthropic error ${res.status}`);
-      }
-      const data = await res.json();
-      text = data.content?.[0]?.text ?? "";
-
-    } else if (openaiKey) {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${openaiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          max_tokens: 2048,
-          messages: [{ role: "user", content: prompt }],
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error?.message || `OpenAI error ${res.status}`);
-      }
-      const data = await res.json();
-      text = data.choices?.[0]?.message?.content ?? "";
-
-    } else if (geminiKey) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 2048 },
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error?.message || `Gemini error ${res.status}`);
-      }
-      const data = await res.json();
-      text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-
-    } else {
-      return json(
-        { error: "No AI key configured on the server. Ask the admin to add ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY as a Supabase secret." },
-        503
-      );
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) {
+      return json({ error: "LOVABLE_API_KEY is not configured." }, 503);
     }
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 2048,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return json({ error: "Rate limit exceeded. Please try again in a moment." }, 429);
+      }
+      if (response.status === 402) {
+        return json({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }, 402);
+      }
+      const t = await response.text();
+      console.error("AI gateway error:", response.status, t);
+      return json({ error: "AI gateway error" }, 500);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content ?? "";
 
     return json({ text });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
+    console.error("ai-prioritize error:", msg);
     return json({ error: msg }, 500);
   }
 });
