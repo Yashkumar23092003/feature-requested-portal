@@ -1,10 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, ArrowUp, ArrowDown, X, Circle, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ArrowUp, ArrowDown, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { type Feature } from "@/hooks/useFeatureData";
 
 const PAGE_SIZE = 10;
 
-type SortKey = "normalized_feature_name" | "category" | "count" | "signal";
+type SortKey = "normalized_feature_name" | "category" | "count";
 type SortDir = "asc" | "desc";
 
 interface FeatureTableProps {
@@ -53,7 +53,6 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
       if (sortKey === "normalized_feature_name") cmp = a.normalized_feature_name.localeCompare(b.normalized_feature_name);
       else if (sortKey === "category") cmp = a.category.localeCompare(b.category);
       else if (sortKey === "count") cmp = a.count - b.count;
-      else if (sortKey === "signal") cmp = (a.count >= 5 ? 1 : 0) - (b.count >= 5 ? 1 : 0);
       return sortDir === "asc" ? cmp : -cmp;
     });
     return list;
@@ -73,11 +72,11 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
 
   if (loading) {
     return (
-      <div className="bg-card border border-border rounded-2xl p-6 card-shadow">
+      <div className="border border-border rounded-xl p-6">
         <div className="skeleton-pulse h-4 w-24 mb-5" />
-        <div className="skeleton-pulse h-9 w-full mb-5 rounded-xl" />
+        <div className="skeleton-pulse h-9 w-full mb-5 rounded-lg" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="skeleton-pulse h-10 w-full mb-2 rounded-lg" />
+          <div key={i} className="skeleton-pulse h-11 w-full mb-2 rounded-lg" />
         ))}
       </div>
     );
@@ -87,28 +86,27 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
     { key: "normalized_feature_name", label: "Feature", className: "text-left" },
     { key: "category", label: "Category", className: "text-left" },
     { key: "count", label: "Requests", className: "text-right" },
-    { key: "signal", label: "Signal", className: "text-center" },
   ];
 
   return (
-    <div ref={tableRef} className="bg-card border border-border rounded-2xl p-6 card-shadow">
+    <div ref={tableRef} className="border border-border rounded-xl p-6">
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <h2 className="text-sm font-semibold text-foreground tracking-tight">All Features</h2>
         <div className="flex-1" />
         <div className="relative min-w-[200px] max-w-xs w-full sm:w-auto">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
           <input
             type="text"
             placeholder="Search…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 text-sm border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all"
           />
         </div>
         {activeCategory && (
           <button
             onClick={onClearCategory}
-            className="flex items-center gap-1.5 text-xs font-medium bg-primary/8 text-primary px-3 py-1.5 rounded-full hover:bg-primary/15 transition-colors border border-primary/15"
+            className="flex items-center gap-1.5 text-xs font-medium bg-primary text-primary-foreground px-3 py-1.5 rounded-full hover:bg-primary/90 transition-colors"
           >
             {activeCategory}
             <X size={11} />
@@ -119,12 +117,12 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
       <div className="overflow-x-auto -mx-6 px-6">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border/60">
+            <tr className="border-b border-border">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   onClick={() => handleSort(col.key)}
-                  className={`${col.className} py-2.5 px-2 text-xs font-medium text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors first:pl-0 last:pr-0`}
+                  className={`${col.className} py-2.5 px-3 text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider cursor-pointer select-none hover:text-foreground transition-colors first:pl-0 last:pr-0`}
                 >
                   <span className="inline-flex items-center gap-1">
                     {col.label}
@@ -137,7 +135,7 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-sm text-muted-foreground">
+                <td colSpan={3} className="text-center py-12 text-sm text-muted-foreground">
                   No features match your search.
                 </td>
               </tr>
@@ -145,22 +143,15 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
               paginated.map((f) => (
                 <tr
                   key={f.feature_key}
-                  className="border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors group"
+                  className="border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors"
                 >
-                  <td className="py-3 px-2 text-foreground font-medium first:pl-0 text-sm">{f.normalized_feature_name}</td>
-                  <td className="py-3 px-2 last:pr-0">
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  <td className="py-3.5 px-3 text-foreground font-medium first:pl-0 text-sm">{f.normalized_feature_name}</td>
+                  <td className="py-3.5 px-3">
+                    <span className="text-xs text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md">
                       {f.category}
                     </span>
                   </td>
-                  <td className="py-3 px-2 text-right tabular-nums font-semibold text-foreground text-sm last:pr-0">{f.count}</td>
-                  <td className="py-3 px-2 text-center last:pr-0">
-                    {f.count >= 5 ? (
-                      <CheckCircle2 size={14} className="text-primary inline-block" />
-                    ) : (
-                      <Circle size={14} className="text-muted-foreground/30 inline-block" />
-                    )}
-                  </td>
+                  <td className="py-3.5 px-3 text-right tabular-nums font-semibold text-foreground text-sm last:pr-0">{f.count}</td>
                 </tr>
               ))
             )}
@@ -169,7 +160,7 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
       </div>
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/60">
-        <span className="text-xs text-muted-foreground tabular-nums">
+        <span className="text-xs text-muted-foreground/60 tabular-nums">
           {filtered.length === 0
             ? "No results"
             : `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
@@ -183,8 +174,8 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
             >
               <ChevronLeft size={13} />
             </button>
-            <span className="text-xs text-muted-foreground tabular-nums px-1.5">
-              {page + 1} / {totalPages}
+            <span className="text-xs text-muted-foreground/60 tabular-nums px-1">
+              {page + 1}/{totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
