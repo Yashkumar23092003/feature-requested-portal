@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { RefreshCw, Settings, Brain, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { RefreshCw, Settings, Brain, Sparkles, Moon, Sun } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Link } from "react-router-dom";
 import { useFeatureData } from "@/hooks/useFeatureData";
