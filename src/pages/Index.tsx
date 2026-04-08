@@ -9,6 +9,13 @@ import CategoryPills from "@/components/CategoryPills";
 import FeatureTable from "@/components/FeatureTable";
 import CredentialsDialog from "@/components/CredentialsDialog";
 
+const SECTION_LABELS: Record<string, string> = {
+  stats: "Quick overview of your request data",
+  chart: "Most requested features at a glance",
+  categories: "Filter by category to find patterns",
+  table: "Full list — search and explore",
+};
+
 const Index = () => {
   const {
     features, loading, error, lastSynced, needsCredentials, refetch,
@@ -26,6 +33,16 @@ const Index = () => {
     return false;
   });
 
+  const isFirstVisit = useState(() => {
+    if (typeof window === "undefined") return false;
+    const visited = localStorage.getItem("fr-visited");
+    if (!visited) {
+      localStorage.setItem("fr-visited", "true");
+      return true;
+    }
+    return false;
+  })[0];
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
     localStorage.setItem("theme", dark ? "dark" : "light");
@@ -40,6 +57,14 @@ const Index = () => {
   const handleCategoryClick = (name: string) => {
     setActiveCategory((prev) => (prev === name ? null : name));
   };
+
+  const sectionClass = (delay: number) =>
+    isFirstVisit
+      ? `animate-fade-up`
+      : "";
+
+  const sectionStyle = (delay: number) =>
+    isFirstVisit ? { animationDelay: `${delay}ms` } : {};
 
   return (
     <div className="min-h-screen bg-background">
