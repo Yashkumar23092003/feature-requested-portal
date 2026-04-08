@@ -39,12 +39,14 @@ export function getStoredCredentials() {
   return {
     spreadsheetId: localStorage.getItem("gsheet_spreadsheet_id") || "",
     apiKey: localStorage.getItem("gsheet_api_key") || "",
+    sheetTab: localStorage.getItem("gsheet_sheet_tab") || "Feature memory",
   };
 }
 
-export function saveCredentials(spreadsheetId: string, apiKey: string) {
+export function saveCredentials(spreadsheetId: string, apiKey: string, sheetTab: string) {
   localStorage.setItem("gsheet_spreadsheet_id", spreadsheetId.trim());
   localStorage.setItem("gsheet_api_key", apiKey.trim());
+  localStorage.setItem("gsheet_sheet_tab", sheetTab.trim() || "Feature memory");
 }
 
 export function hasCredentials(): boolean {
@@ -67,6 +69,7 @@ export function useFeatureData() {
     const stored = getStoredCredentials();
     const spreadsheetId = stored.spreadsheetId || import.meta.env.VITE_SPREADSHEET_ID;
     const apiKey = stored.apiKey || import.meta.env.VITE_GOOGLE_API_KEY;
+    const sheetTab = stored.sheetTab || "Feature memory";
 
     if (!spreadsheetId || !apiKey) {
       setNeedsCredentials(true);
@@ -75,9 +78,23 @@ export function useFeatureData() {
     }
 
     try {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Feature%20memory?key=${apiKey}`;
+      const encodedTab = encodeURIComponent(sheetTab);
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedTab}?key=${apiKey}`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`API error ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        const msg = errData?.error?.message || `API error ${res.status}`;
+        if (msg.includes("API key not valid")) {
+          throw new Error("Invalid API key. Make sure you're pasting the API Key (starts with AIza…), not the Spreadsheet ID.");
+        }
+        if (msg.includes("Unable to parse range")) {
+          throw new Error(`Sheet tab "${sheetTab}" not found. Check the exact tab name in your Google Sheet.`);
+        }
+        if (res.status === 403) {
+          throw new Error("Access denied. Make sure the sheet is shared as 'Anyone with the link' and the Sheets API is enabled.");
+        }
+        throw new Error(msg);
+      }
       const data = await res.json();
 
       const rows: string[][] = data.values || [];
@@ -104,7 +121,7 @@ export function useFeatureData() {
       setFeatures(parsed);
       setLastSynced(new Date());
     } catch (e: unknown) {
-      setError("Could not load data. Check your Sheet ID and API key.");
+      setError(e instanceof Error ? e.message : "Could not load data. Check your Sheet ID and API key.");
     } finally {
       setLoading(false);
     }
