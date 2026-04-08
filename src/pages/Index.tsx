@@ -66,6 +66,13 @@ const Index = () => {
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setDark((d) => !d)}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="Toggle dark mode"
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
             <HoverCard>
               <HoverCardTrigger asChild>
                 <button className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-muted-foreground bg-muted/50 hover:bg-muted transition-colors">
