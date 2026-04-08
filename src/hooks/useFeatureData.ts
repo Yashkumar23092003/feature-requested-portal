@@ -153,6 +153,7 @@ export function useFeatureData() {
     loading,
     error,
     lastSynced,
+    needsCredentials,
     refetch: fetchData,
     totalFeatures,
     totalRequests,
