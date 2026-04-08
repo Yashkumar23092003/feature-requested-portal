@@ -38,7 +38,7 @@ const FeatureTable = ({ features, activeCategory, onClearCategory, loading }: Fe
   };
 
   const filtered = useMemo(() => {
-    let list = features;
+    let list = features.filter((f) => f.count >= 1);
     if (activeCategory) list = list.filter((f) => f.category === activeCategory);
     if (search.trim()) {
       const q = search.toLowerCase();
