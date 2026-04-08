@@ -73,7 +73,7 @@ describe("PM Brain Page", () => {
     fireEvent.click(screen.getByText("Paste Text"));
 
     fireEvent.change(screen.getByPlaceholderText(/Title/), { target: { value: "My Expertise" } });
-    fireEvent.change(screen.getByPlaceholderText(/expertise/i), {
+    fireEvent.change(screen.getByPlaceholderText(/Describe your/), {
       target: { value: "I know workflow automation." },
     });
     fireEvent.click(screen.getByText("Add to Brain"));
