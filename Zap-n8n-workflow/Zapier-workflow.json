@@ -1,0 +1,73 @@
+{
+    "metadata": {
+        "version": 2
+    },
+    "zaps": [
+        {
+            "id": 1,
+            "title": "Send meeting summaries via Gmail with Tactiq and ChatGPT",
+            "nodes": {
+                "1": {
+                    "id": 1,
+                    "paused": false,
+                    "type_of": "read",
+                    "params": {},
+                    "meta": {
+                        "$editor": {
+                            "from_zap_template": "255588346",
+                            "has_automatic_issues": false
+                        }
+                    },
+                    "triple_stores": {
+                        "copied_from": null,
+                        "created_by": null,
+                        "polling_interval_override": 0,
+                        "block_and_release_limit_override": 0,
+                        "spread_tasks": 1
+                    },
+                    "parent_id": null,
+                    "root_id": null,
+                    "action": "transcription_ready",
+                    "selected_api": "TactiqCLIAPI@1.1.1",
+                    "title": "Send meeting summaries via Gmail with Tactiq and ChatGPT",
+                    "authentication_id": "ddec855770a1d6329b95eee78bafa11bd05f21329d5f83244b20b84b5034c3b0"
+                },
+                "2": {
+                    "id": 2,
+                    "paused": true,
+                    "type_of": "write",
+                    "params": {
+                        "drive": "",
+                        "spreadsheet": "1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI",
+                        "worksheet": "0",
+                        "COL$A": "{{=gives[\"358267462\"][\"transcript\"]}}",
+                        "COL$B": "{{=gives[\"358267462\"][\"meeting\"][\"title\"]}}"
+                    },
+                    "meta": {
+                        "$editor": {
+                            "has_automatic_issues": false
+                        },
+                        "parammap": {
+                            "drive": "My Google Drive",
+                            "spreadsheet": "Features requested",
+                            "worksheet": "Sheet1"
+                        }
+                    },
+                    "triple_stores": {
+                        "copied_from": null,
+                        "created_by": null,
+                        "polling_interval_override": 0,
+                        "block_and_release_limit_override": 0,
+                        "spread_tasks": 1
+                    },
+                    "parent_id": 1,
+                    "root_id": 1,
+                    "action": "add_row_lines",
+                    "selected_api": "GoogleSheetsV2CLIAPI@2.12.0",
+                    "title": null,
+                    "authentication_id": "c5704a5ba06d27663e7b8cb3e0ea8ac1736a519e9ed04e22113e749aed92d43f"
+                }
+            }
+        }
+    ]
+}
