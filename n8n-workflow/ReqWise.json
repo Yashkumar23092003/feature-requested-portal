@@ -1,0 +1,695 @@
+{
+  "name": "ReqWise",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI",
+          "mode": "list",
+          "cachedResultName": "Features requested",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -160
+      ],
+      "id": "236b0c8d-faf4-46fa-b552-a0a6adc4de5e",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "mnbcEjGwDPyf2pMt",
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a strict B2B SaaS Product Intelligence Analyst and Feature Deduplication Engine.\n\nYour job is to:\n\nAnalyze a customer meeting transcript and extract missing feature requests\nSEMANTICALLY MATCH each request against the existing Feature Memory\nDetermine if it's a NEW request or an EXISTING request\nReturn instructions to either CREATE_NEW_ROW or UPDATE_EXISTING_COUNT\n\nYou are NOT a chatbot. You do NOT greet, acknowledge, or explain.\nYou are a structured feature request deduplication engine.\nYour ENTIRE response MUST be a single VALID JSON object.\n\n⚠️ HARD OUTPUT RULES (CRITICAL – OVERRIDES EVERYTHING)\nOutput MUST be valid JSON (parsable, complete, no truncation)\nDo NOT exceed token limits\nIf output is getting large:\n→ LIMIT results to TOP 5 MOST IMPORTANT features (HIGH > MEDIUM > LOW)\nIf still too large:\n→ LIMIT to TOP 3 features\nNEVER cut JSON mid-way\nNEVER leave braces incomplete\nNEVER include explanations outside JSON\n⚠️ EMPTY TRANSCRIPT HANDLING\n\nIf INPUT 1 is empty or missing, return EXACTLY:\n\n{\n\"error\": \"NO_TRANSCRIPT\",\n\"message\": \"INPUT 1 (Raw transcript) was empty or missing. No analysis performed.\",\n\"missing_feature_requests\": []\n}\n\nINPUTS\n\nINPUT 1:\n{{ $json['Raw transcript'] }}\nINPUT 2:\n{{ $json.feature_memory }}\nINPUT 3:\nWe are a CRM provider in real estate covering pre-sales and sales journey.\n\nTASK FLOW\nSTEP 1 — Extract Requests\n\nIdentify:\n\nDirect asks\nPain points\nManual workflows\nMissing capabilities\nSTEP 2 — Normalize Requests\n\nConvert into short PM-style feature names\n\nExamples:\n\n\"Can it sync Salesforce?\" → \"Salesforce sync\"\n\"We manually export reports\" → \"Automated reporting export\"\nSTEP 3 — Filter by Availability\n\nClassify:\n\nALREADY_AVAILABLE → DROP\nPARTIALLY_AVAILABLE → KEEP (if gap exists)\nNOT_AVAILABLE → KEEP\nUNCLEAR → DROP\nSTEP 4 — Normalize Output Fields\n\nFor each request:\n\nfeature_name → short (max 6–8 words)\nnormalized_feature_name → stable reusable name\nfeature_key → snake_case, reusable\ncategory → MUST be from allowed list\nSTEP 4B — ALLOWED CATEGORIES ONLY\n\nintegrations | reporting | automation | permissions | admin_panel | analytics | workflow | onboarding | communication | notifications | dashboard | data_export | ai | billing | mobile | security | compliance | ux | other\n\nSTEP 5 — SEMANTIC MATCHING (CRITICAL)\n\nMatch against FEATURE MEMORY using:\n\nfeature_key similarity\nnormalized name similarity\nunderlying capability\nMATCH RULES\n\nIF MATCH FOUND:\n\nmatch_status = EXISTING_FEATURE_REQUEST\naction = UPDATE_EXISTING_COUNT\ncount = existing_count + 1\n\nIF NO MATCH:\n\nmatch_status = NEW_FEATURE_REQUEST\naction = CREATE_NEW_ROW\ncount = 1\nCONFIDENCE LOGIC\n\n0.85 → strong match\n0.60–0.85 → match (add note in match_reasoning)\n< 0.40 → NEW feature\n\n⚠️ OUTPUT COMPRESSION RULES (VERY IMPORTANT)\n\nTo avoid truncation, STRICTLY LIMIT:\n\nwhy_not_available → MAX 10 words\ntranscript_evidence → MAX 8 words\nmatch_reasoning → MAX 12 words\n\nKeep all text SHORT and concise.\n\nOUTPUT FORMAT\n\nReturn ONLY JSON:\n\n{\n\"missing_feature_requests\": [\n{\n\"feature_name\": \"\",\n\"normalized_feature_name\": \"\",\n\"feature_key\": \"\",\n\"category\": \"\",\n\"support_status\": \"\",\n\"why_not_available\": \"\",\n\"transcript_evidence\": \"\",\n\"importance_level\": \"\",\n\"match_status\": \"\",\n\"matched_existing_feature_name\": null,\n\"matched_existing_normalized_name\": null,\n\"matched_existing_feature_key\": null,\n\"matched_existing_row_identifier\": null,\n\"existing_count\": 0,\n\"count\": 1,\n\"action\": \"\",\n\"match_confidence\": 0.0,\n\"match_reasoning\": \"\"\n}\n]\n}\n\nFINAL VALIDATION (MANDATORY)\n\nBefore returning:\n\nJSON must be COMPLETE and CLOSED properly\nNo missing braces or brackets\nNo trailing commas\nAll categories valid\nfeature_key must be snake_case\nEXISTING requests must include:\nmatched_existing_feature_key\nmatched_existing_row_identifier\nexisting_count > 0\ncount = existing_count + 1\nNEW requests must include:\nmatched fields = null\ncount = 1\n🚨 FINAL RULE\n\nIf token limit risk occurs:\n→ REDUCE NUMBER OF FEATURES\n→ NEVER CUT JSON\n\nFINAL OUTPUT ENFORCEMENT:\n\nBefore sending response:\n- Ensure first character is {\n- Ensure last character is }\n- Ensure no ``` or markdown exists\n- Ensure no ... exists\n- Ensure JSON is complete and valid\n\nIf any of the above fails:\nRegenerate the response correctly.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        32,
+        -160
+      ],
+      "id": "53db9e08-9934-4902-8f61-c16607c49706",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI",
+          "mode": "list",
+          "cachedResultName": "Features requested",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2131450159,
+          "mode": "list",
+          "cachedResultName": "Analysed output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit#gid=2131450159"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "feature_name": "={{$json.missing_feature_requests.feature_name}}",
+            "normalized_feature_name": "={{$json.missing_feature_requests.feature_name}}",
+            "feature_key": "={{$json.missing_feature_requests.feature_key}}",
+            "category": "={{$json.missing_feature_requests.category}}",
+            "count": "={{$json.missing_feature_requests.count}}"
+          },
+          "matchingColumns": [
+            "feature_name"
+          ],
+          "schema": [
+            {
+              "id": "feature_name",
+              "displayName": "feature_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "normalized_feature_name",
+              "displayName": "normalized_feature_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feature_key",
+              "displayName": "feature_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "count",
+              "displayName": "count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        -336
+      ],
+      "id": "8e7bef90-2f95-4a07-aef7-adb0f7b234b7",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JjnoTCRxlwhTQBGx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI",
+          "mode": "list",
+          "cachedResultName": "Features requested",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2131450159,
+          "mode": "list",
+          "cachedResultName": "Analysed output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit#gid=2131450159"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        64
+      ],
+      "id": "988566b4-fbd9-4429-84a8-2cc16321fbbb",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "rewireOutputLogTo": "ai_tool",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JjnoTCRxlwhTQBGx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nlet raw = item.output ?? item;\n\nlet text = typeof raw === 'string' ? raw : JSON.stringify(raw);\ntext = text.trim();\n\n// If the whole payload is wrapped as a quoted string, decode it once.\nif (\n  (text.startsWith('\"') && text.endsWith('\"')) ||\n  (text.startsWith(\"'\") && text.endsWith(\"'\"))\n) {\n  try {\n    text = JSON.parse(text);\n  } catch (_) {}\n}\n\n// Remove markdown fences and extra whitespace.\ntext = text\n  .replace(/^\\uFEFF/, '')\n  .replace(/```json\\s*/gi, '')\n  .replace(/```/g, '')\n  .trim();\n\n// Extract only the JSON object.\nconst firstBrace = text.indexOf('{');\nconst lastBrace = text.lastIndexOf('}');\n\nif (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {\n  return [{\n    json: {\n      error: 'NO_JSON_FOUND',\n      raw_output: raw,\n      cleaned_output: text,\n    }\n  }];\n}\n\nconst jsonText = text.slice(firstBrace, lastBrace + 1);\n\ntry {\n  const parsed = JSON.parse(jsonText);\n  return [{ json: parsed }];\n} catch (err) {\n  return [{\n    json: {\n      error: 'JSON_PARSE_ERROR',\n      message: err.message,\n      raw_output: raw,\n      cleaned_output: jsonText,\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -160
+      ],
+      "id": "3093d8cc-79be-4d4d-aed2-a47c669cea25",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "missing_feature_requests",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -160
+      ],
+      "id": "f720581d-6cbb-4524-a5f1-c1db24c5373f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2e54b28d-dd51-4087-a021-65eb35254198",
+              "leftValue": "={{$json.missing_feature_requests.action}}",
+              "rightValue": "=CREATE_NEW_ROW",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        -160
+      ],
+      "id": "402c2592-87d0-4211-9a52-701b4377e193",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI",
+          "mode": "list",
+          "cachedResultName": "Features requested",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2131450159,
+          "mode": "list",
+          "cachedResultName": "Feature Memory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit#gid=2131450159"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -448,
+        -256
+      ],
+      "id": "f9707a67-d08b-4153-a8aa-1bc3d3face51",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JjnoTCRxlwhTQBGx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\n\nconst memoryString = allItems.map(item => {\n  return `${item.json.row_number} | ${item.json.feature_name} | ${item.json.normalized_feature_name} | ${item.json.feature_key} | ${item.json.category} | ${item.json.count}`;\n}).join('\\n');\n\nreturn [{\n  json: {\n    feature_memory: memoryString\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        -256
+      ],
+      "id": "98f1ea60-b248-4cdd-ba60-97345ea6411f",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {
+          "maxTokensToSample": 4096
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        240
+      ],
+      "id": "5678a13e-24f5-4124-869c-424929fd01eb",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "v0bNLlfkUDZKL07s",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2e54b28d-dd51-4087-a021-65eb35254198",
+              "leftValue": "={{ $json['Processed '] }}",
+              "rightValue": "=Processed ",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -320,
+        -32
+      ],
+      "id": "9d0690ca-9f83-49bb-87c7-d11f5a4a37a2",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI",
+          "mode": "list",
+          "cachedResultName": "Features requested",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2131450159,
+          "mode": "list",
+          "cachedResultName": "Analysed output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit#gid=2131450159"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "count": "={{ $json.missing_feature_requests.count + 1 }}",
+            "feature_name": "={{ $json.missing_feature_requests.feature_name }}"
+          },
+          "matchingColumns": [
+            "feature_name"
+          ],
+          "schema": [
+            {
+              "id": "feature_name",
+              "displayName": "feature_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "normalized_feature_name",
+              "displayName": "normalized_feature_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "feature_key",
+              "displayName": "feature_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "count",
+              "displayName": "count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        16
+      ],
+      "id": "b40fde7e-31f7-49e8-8483-9ec5d6e88d0f",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JjnoTCRxlwhTQBGx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI",
+          "mode": "list",
+          "cachedResultName": "Features requested",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Od3b7TjNCY_GnUtEfsuPk1VOy69r62Nz3dWqwtQJsYI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Processed ": "=Processed",
+            "Meeting title": "={{ $('If1').item.json['Meeting title'] }}"
+          },
+          "matchingColumns": [
+            "Meeting title"
+          ],
+          "schema": [
+            {
+              "id": "Raw transcript",
+              "displayName": "Raw transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Meeting title",
+              "displayName": "Meeting title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Processed ",
+              "displayName": "Processed ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        -144
+      ],
+      "id": "8fa9b91e-71da-4f5d-84c4-b3a63fa8b607",
+      "name": "Append or update row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JjnoTCRxlwhTQBGx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1fc30159-3d68-495a-b7ee-66c050cfac07",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "84bacf05cf84f608e3503d89c77cd7c0f3d065fec40af215a2d62c8cf51607cc"
+  },
+  "id": "M0drdbAn3AUBi2g3",
+  "tags": []
+}
